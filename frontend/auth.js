@@ -1,10 +1,31 @@
+async function register() {
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    const res = await fetch('/auth/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    });
+
+    if (res.ok) {
+        alert('Register successful');
+    } else {
+        const msg = await res.text();
+        alert('Register failed: ' + msg);
+    }
+}
+
 async function login() {
 
-    const username =
-        document.getElementById('username').value;
-
-    const password =
-        document.getElementById('password').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
     const res = await fetch('/auth/login', {
         method: 'POST',
@@ -12,8 +33,8 @@ async function login() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            username,
-            password
+            username: username,
+            password: password
         })
     });
 
@@ -28,29 +49,4 @@ async function login() {
     localStorage.setItem('token', data.token);
 
     location.href = 'dashboard.html';
-}
-async function register() {
-
-    const username =
-        document.getElementById('username').value;
-
-    const password =
-        document.getElementById('password').value;
-
-    const res = await fetch('/auth/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            username,
-            password
-        })
-    });
-
-    alert(
-        res.ok
-            ? 'Register successful'
-            : 'Register failed'
-    );
 }
