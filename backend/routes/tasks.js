@@ -61,19 +61,5 @@ router.get('/stats', auth, (req, res) => {
         }
     );
 });
-router.delete('/:id', auth, (req, res) => {
-    db.run(
-        "DELETE FROM tasks WHERE id = ? AND user_id = ?",
-        [req.params.id, req.user.id],
-        function(err) {
-            if (err) {
-                return res.status(500).json(err);
-            }
 
-            res.json({
-                deleted: this.changes
-            });
-        }
-    );
-});
 module.exports = router;
