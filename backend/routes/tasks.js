@@ -30,4 +30,35 @@ router.delete('/:id', auth, (req, res) => {
         }
     );
 });
+router.get('/stats', auth, (req, res) => {
+
+    db.get(
+        `
+        SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as completed
+        FROM tasks
+        WHERE user_id = ?
+        `,
+        [req.user.id],
+        (err, row) => {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            const total = row.total || 0;
+            const completed = row.completed || 0;
+
+            res.json({
+                total,
+                completed,
+                completionRate:
+                    total === 0
+                    ? 0
+                    : (completed / total) * 100
+            });
+        }
+    );
+});
 module.exports = router;
