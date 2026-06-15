@@ -14,17 +14,34 @@ router.post('/register', async (req, res) => {
     });
 });
 router.post('/login', (req, res) => {
-    db.get("SELECT * FROM users WHERE username = ?",
+    db.get(
+    "SELECT * FROM users WHERE username = ?",
     [req.body.username],
     async (err, user) => {
-        if (!user) return res.sendStatus(403);
 
-        const valid = await bcrypt.compare(req.body.password, user.password);
-        if (!valid) return res.sendStatus(403);
+        console.log("Login user:", user);
 
-        const token = jwt.sign({ id: user.id }, 'secret');
+        if (!user)
+            return res.status(403).send("User not found");
+
+        const valid =
+            await bcrypt.compare(
+                req.body.password,
+                user.password
+            );
+
+        if (!valid)
+            return res.status(403).send("Wrong password");
+
+        const token =
+            jwt.sign(
+                { id: user.id },
+                'secret'
+            );
+
         res.json({ token });
-    });
+    }
+);
 });
 
 module.exports = router;
