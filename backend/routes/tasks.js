@@ -3,40 +3,83 @@ const router = express.Router();
 const db = require('../config/db');
 const auth = require('../middleware/auth');
 
+/*
+ * Get all tasks
+ */
 router.get('/', auth, (req, res) => {
-    db.all("SELECT * FROM tasks WHERE user_id = ?",
-    [req.user.id],
-    (err, rows) => {
-        res.json(rows);
-    });
+
+    db.all(
+        'SELECT * FROM tasks WHERE user_id = ?',
+        [req.user.id],
+        (err, rows) => {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json(rows);
+        }
+    );
+
 });
+
+/*
+ * Create task
+ */
 router.post('/', auth, (req, res) => {
-    db.run("INSERT INTO tasks (user_id, title, status) VALUES (?, ?, 0)",
-    [req.user.id, req.body.title],
-    function() {
-        res.json({ id: this.lastID });
-    });
-});
-router.delete('/:id', auth, (req, res) => {
+
     db.run(
-        "DELETE FROM tasks WHERE id = ? AND user_id = ?",
+        'INSERT INTO tasks (user_id, title, status) VALUES (?, ?, 0)',
+        [req.user.id, req.body.title],
+        function (err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
+
+            res.json({
+                id: this.lastID,
+                message: 'Task created'
+            });
+
+        }
+    );
+
+});
+
+/*
+ * Delete task
+ */
+router.delete('/:id', auth, (req, res) => {
+
+    db.run(
+        'DELETE FROM tasks WHERE id = ? AND user_id = ?',
         [req.params.id, req.user.id],
-        function(err) {
-            if (err) return res.status(500).json(err);
+        function (err) {
+
+            if (err) {
+                return res.status(500).json(err);
+            }
 
             res.json({
                 deleted: this.changes
             });
+
         }
     );
+
 });
+
+/*
+ * Task statistics
+ */
 router.get('/stats', auth, (req, res) => {
 
     db.get(
         `
         SELECT
-        COUNT(*) as total,
-        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as completed
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS completed
         FROM tasks
         WHERE user_id = ?
         `,
@@ -55,11 +98,13 @@ router.get('/stats', auth, (req, res) => {
                 completed,
                 completionRate:
                     total === 0
-                    ? 0
-                    : (completed / total) * 100
+                        ? 0
+                        : ((completed / total) * 100).toFixed(2)
             });
+
         }
     );
+
 });
 
 module.exports = router;
